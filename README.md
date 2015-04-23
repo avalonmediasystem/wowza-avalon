@@ -25,13 +25,13 @@ server to authorize stream playback.
 
 ### Configure Avalon to stream from Wowza
 1. In `config/avalon.yml`:
-```yaml
-streaming:
-  server: :wowza
-  stream_token_ttl: 20
-  rtmp_base: rtmp://[wowza-hostname]/avalon
-  http_base: http://[wowza-hostname]:1935/avalon/_definst_
-```
+
+        streaming:
+          server: :wowza
+          stream_token_ttl: 20
+          rtmp_base: rtmp://[wowza-hostname]/avalon
+          http_base: http://[wowza-hostname]:1935/avalon/_definst_
+
 2. Restart Avalon 
 
 ## Development
