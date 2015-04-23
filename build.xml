@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<project name="wowza-avalon" default="deploy">
+	
+	<property name="wowza.lib.dir" value="/Library/WowzaStreamingEngine-4.1.2/lib"/>
+	<property name="jar.filename" value="avalon-auth.jar"/>
+	<property name="core.build.dir" value="bin"/>
+	<property name="core.dist.dir" value="dist"/>
+	
+	<target name="jar">
+		<jar jarfile="${core.dist.dir}/${jar.filename}">
+			<fileset dir="${core.build.dir}"/>
+		</jar>
+	</target>
+
+	<target name="deploy" depends="jar">
+		<copy todir="${wowza.lib.dir}">
+			<fileset dir="${core.dist.dir}">
+				<filename name="${jar.filename}"/>
+			</fileset>
+		</copy>
+	</target>
+	
+</project>
