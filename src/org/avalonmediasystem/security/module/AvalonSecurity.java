@@ -24,22 +24,22 @@ import org.apache.http.NameValuePair;
 public class AvalonSecurity extends ModuleBase {
 
   public String defaultUrl = "http://localhost:3000/";
-	private URL baseAuthUrl;
-    
-  public void onAppStart(IApplicationInstance appInstance) {
-  	String avalonUrl = appInstance.getProperties().getPropertyStr("avalonUrl",defaultUrl);
-  	try {
-  		baseAuthUrl = new URL(avalonUrl);
-  		getLogger().info("Initialized Avalon security module at " + baseAuthUrl);
-  	} catch(MalformedURLException err) {
-  		getLogger().error("Unable to initialize Avalon security module", err);
-  	}
-  }
-    
-  private String authStream(String authToken) {
-  	URL authUrl;
+  private URL baseAuthUrl;
 
-  	try {
+  public void onAppStart(IApplicationInstance appInstance) {
+    String avalonUrl = appInstance.getProperties().getPropertyStr("avalonUrl",defaultUrl);
+    try {
+      baseAuthUrl = new URL(avalonUrl);
+      getLogger().info("Initialized Avalon security module at " + baseAuthUrl);
+    } catch(MalformedURLException err) {
+      getLogger().error("Unable to initialize Avalon security module", err);
+    }
+  }
+
+  private String authStream(String authToken) {
+    URL authUrl;
+
+    try {
       authUrl = new URL(baseAuthUrl, "authorize?token="+authToken);
     } catch(MalformedURLException err) {
       getLogger().error("Error parsing URL", err);
@@ -57,7 +57,7 @@ public class AvalonSecurity extends ModuleBase {
       } else {
         BufferedReader reader = new BufferedReader(new InputStreamReader(http.getInputStream()));
         String authorized = reader.readLine().trim();
-      	getLogger().debug("Authorized to stream " + authorized);
+        getLogger().debug("Authorized to stream " + authorized);
         return authorized;
       }
     } catch (IOException err) {
@@ -67,38 +67,50 @@ public class AvalonSecurity extends ModuleBase {
   }
 
   private String getAuthToken(String source) {
-  	String[] parts = source.split("\\?");
-  	String query = parts[parts.length-1];
-  	List<NameValuePair> httpParams = URLEncodedUtils.parse(query,Charset.defaultCharset());
-  	for (NameValuePair param:httpParams) {
-      if (param.getName().equals("token")) {
-      	return param.getValue();
+    if (source != null) {
+      String[] parts = source.split("\\?");
+      String query = parts[parts.length-1];
+      List<NameValuePair> httpParams = URLEncodedUtils.parse(query,Charset.defaultCharset());
+      for (NameValuePair param:httpParams) {
+        if (param.getName().equals("token")) {
+          return param.getValue();
+        }
       }
-  	}
-  	return null;
-  }
-  
-  public void onConnect(IClient client, RequestFunction function,
-		AMFDataList params) {
-  	AMFDataObj connectObj = (AMFDataObj)params.get(2);
-  	String appName = connectObj.get("app").toString();
-  	String authToken = getAuthToken(appName);
-  	String authorized = authStream(authToken);
-  	client.setStreamReadAccess(authorized);
+    }
+    return null;
   }
 
-	public void onHTTPSessionCreate(IHTTPStreamerSession httpSession) {
-		getLogger().info("onHTTPSessionCreate: " + httpSession.getSessionId());
-		String query = httpSession.getQueryStr();
-		String authToken = getAuthToken(query);
-		String authorized = authStream(authToken);
-		
-		String streamName = httpSession.getStreamName();
-		
-		if ((authorized != null) && streamName.startsWith(authorized)) {
-			httpSession.acceptSession();
-		} else {
-			httpSession.rejectSession();
-		}
-	}
+  public void onConnect(IClient client, RequestFunction function,
+      AMFDataList params) {
+    AMFDataObj connectObj = (AMFDataObj)params.get(2);
+    String appName = connectObj.get("app").toString();
+    String authToken = getAuthToken(appName);
+    String authorized = authStream(authToken).replace(" ", ";");
+    getLogger().info("StreamReadAccess: " + authorized);
+    client.setStreamReadAccess(authorized);
+  }
+
+  public void onHTTPSessionCreate(IHTTPStreamerSession httpSession) {
+    getLogger().info("onHTTPSessionCreate: " + httpSession.getSessionId());
+    String query = httpSession.getQueryStr();
+    String authToken = getAuthToken(query);
+
+    String authResponse = authStream(authToken);
+    if (authResponse == null) {
+      httpSession.rejectSession();
+      return;
+    }
+    
+    String[] authorized = authResponse.split(" ");
+    String streamName = httpSession.getStreamName();
+
+    for (String authorizedStream:authorized) {
+      getLogger().info("Testing " + authorizedStream + " against " + streamName);
+      if ((authorized != null) && streamName.startsWith(authorizedStream)) {
+        httpSession.acceptSession();
+        return;
+      }
+    }
+    httpSession.rejectSession();
+  }
 }
