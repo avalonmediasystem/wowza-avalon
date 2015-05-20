@@ -9,15 +9,14 @@ import com.wowza.wms.httpstreamer.model.*;
 
 import java.io.IOException;
 import java.util.List;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
 import java.nio.charset.Charset;
-
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.NameValuePair;
 
@@ -36,7 +35,7 @@ public class AvalonSecurity extends ModuleBase {
     }
   }
 
-  private String authStream(String authToken) {
+  private List<String> authStream(String authToken) {
     URL authUrl;
 
     try {
@@ -47,19 +46,22 @@ public class AvalonSecurity extends ModuleBase {
     }
 
     getLogger().debug("Authorizing against " + authUrl.toString());
+    List<String> authorized = new java.util.ArrayList<String>();
     try {
       HttpURLConnection http = (HttpURLConnection)authUrl.openConnection();
       http.addRequestProperty("Accept", "text/plain");
       http.setRequestMethod("GET");
       http.connect();
-      if (http.getResponseCode() != 202 ) {
-        return null;
-      } else {
+      if (http.getResponseCode() == 202 ) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(http.getInputStream()));
-        String authorized = reader.readLine().trim();
-        getLogger().debug("Authorized to stream " + authorized);
-        return authorized;
+        String authorizedStream = reader.readLine();
+        while (authorizedStream != null) {
+          authorized.add(authorizedStream);
+          authorizedStream = reader.readLine();
+        }
+        getLogger().debug("Authorized to stream " + authorized.toString());
       }
+      return authorized;
     } catch (IOException err) {
       getLogger().error("Error connecting to " + authUrl.toString(), err);
       return null;
@@ -85,7 +87,7 @@ public class AvalonSecurity extends ModuleBase {
     AMFDataObj connectObj = (AMFDataObj)params.get(2);
     String appName = connectObj.get("app").toString();
     String authToken = getAuthToken(appName);
-    String authorized = authStream(authToken).replace(" ", ";");
+    String authorized = StringUtils.join(authStream(authToken), ";");
     getLogger().info("StreamReadAccess: " + authorized);
     client.setStreamReadAccess(authorized);
   }
@@ -94,14 +96,12 @@ public class AvalonSecurity extends ModuleBase {
     getLogger().info("onHTTPSessionCreate: " + httpSession.getSessionId());
     String query = httpSession.getQueryStr();
     String authToken = getAuthToken(query);
-
-    String authResponse = authStream(authToken);
-    if (authResponse == null) {
+    
+    List<String> authorized = authStream(authToken);
+    if (authorized.isEmpty()) {
       httpSession.rejectSession();
       return;
     }
-    
-    String[] authorized = authResponse.split(" ");
     String streamName = httpSession.getStreamName();
 
     for (String authorizedStream:authorized) {
