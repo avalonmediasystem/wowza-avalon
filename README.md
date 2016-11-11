@@ -34,9 +34,9 @@ server to authorize stream playback.
 
         streaming:
           server: :wowza
-            stream_token_ttl: 20
-            rtmp_base: rtmp://[wowza-hostname]/avalon
-            http_base: http://[wowza-hostname]:1935/avalon/_definst_
+          stream_token_ttl: 20
+          rtmp_base: rtmp://[wowza-hostname]/avalon
+          http_base: http://[wowza-hostname]:1935/avalon/_definst_
 
 4. Restart Avalon 
 
