@@ -205,8 +205,8 @@
 		<Properties>
 			<Property>
 				<!-- Put the URL of the Avalon Media System server here -->
-				<Name>avalonUrl</Name>
-				<Value>http://localhost:3000/</Value>
+				<Name>avalonUrls</Name>
+				<Value>http://localhost:3000/, http://localhost:3000/</Value>
 			</Property>
 		</Properties>
 	</Application>
