@@ -22,7 +22,7 @@
 			${com.wowza.wms.AppHome} - Application home directory
 			${com.wowza.wms.ConfigHome} - Configuration home directory
 			${com.wowza.wms.context.VHost} - Virtual host name
-			${com.wowza.wms.context.VHostConfigHome} - Virtual host config directory
+			${com.wowza.wms.context.VHostConfigHome} - Virtual host home directory
 			${com.wowza.wms.context.Application} - Application name
 			${com.wowza.wms.context.ApplicationInstance} - Application instance name
 			
@@ -47,38 +47,49 @@
 			<Properties>
 			</Properties>
 		</Transcoder>
+
 		<DVR>
 			<!-- As a single server or as an origin, use dvrstreamingpacketizer in LiveStreamPacketizers above -->
 			<!-- Or, in an origin-edge configuration, edges use dvrstreamingrepeater in LiveStreamPacketizers above -->
 			<!-- As an origin, also add dvrchunkstreaming to HTTPStreamers below -->
+
 			<!-- If this is a dvrstreamingrepeater, define Application/Repeater/OriginURL to point back to the origin -->
+			
 			<!-- To turn on DVR recording set Recorders to dvrrecorder.  This works with dvrstreamingpacketizer  -->
 			<Recorders></Recorders>
+
 			<!-- As a single server or as an origin, set the Store to dvrfilestorage-->
 			<!-- edges should have this empty -->
 			<Store></Store>
+
 			<!--  Window Duration is length of live DVR window in seconds.  0 means the window is never trimmed. -->
 			<WindowDuration>0</WindowDuration>
+
 			<!-- Storage Directory is top level location where dvr is stored.  e.g. c:/temp/dvr -->
 			<StorageDir>${com.wowza.wms.context.VHostConfigHome}/dvr</StorageDir>
+
 			<!-- valid ArchiveStrategy values are append, version, delete -->
 			<ArchiveStrategy>append</ArchiveStrategy>
+
 			<!-- Properties for DVR -->
 			<Properties>
 			</Properties>
 		</DVR>
+
 		<TimedText>
 			<!-- VOD caption providers (separate with commas): vodcaptionprovidermp4_3gpp, vodcaptionproviderttml, vodcaptionproviderwebvtt,  vodcaptionprovidersrt, vodcaptionproviderscc -->
 			<VODTimedTextProviders>vodcaptionprovidermp4_3gpp, vodcaptionprovidersrt</VODTimedTextProviders>
+			
 			<!-- Properties for TimedText -->
 			<Properties>
-			</Properties>
+			</Properties>		
 		</TimedText>
+		
 		<!-- HTTPStreamers (separate with commas): cupertinostreaming, smoothstreaming, sanjosestreaming, mpegdashstreaming, dvrchunkstreaming -->
-		<HTTPStreamers>cupertinostreaming, smoothstreaming, sanjosestreaming, mpegdashstreaming</HTTPStreamers>
+		<HTTPStreamers>cupertinostreaming,smoothstreaming,sanjosestreaming,mpegdashstreaming</HTTPStreamers>
 		<MediaCache>
 			<MediaCacheSourceList></MediaCacheSourceList>
-		</MediaCache>
+		</MediaCache>		
 		<SharedObjects>
 			<StorageDir>${com.wowza.wms.context.VHostConfigHome}/applications/${com.wowza.wms.context.Application}/sharedobjects/${com.wowza.wms.context.ApplicationInstance}</StorageDir>
 		</SharedObjects>
@@ -174,11 +185,11 @@
 		<Repeater>
 			<OriginURL></OriginURL>
 			<QueryString><![CDATA[]]></QueryString>
-		</Repeater>
+		</Repeater> 
 		<StreamRecorder>
 			<Properties>
 			</Properties>
-		</StreamRecorder>
+		</StreamRecorder> 
 		<Modules>
 			<Module>
 				<Name>base</Name>
@@ -194,7 +205,7 @@
 				<Name>flvplayback</Name>
 				<Description>FLVPlayback</Description>
 				<Class>com.wowza.wms.module.ModuleFLVPlayback</Class>
-			</Module>
+			</Module> 
 			<Module>
 				<Name>AvalonSecurity</Name>
 				<Description>Avalon Media System Security Shim</Description>
@@ -204,9 +215,8 @@
 		<!-- Properties defined here will be added to the IApplication.getProperties() and IApplicationInstance.getProperties() collections -->
 		<Properties>
 			<Property>
-				<!-- Put the URL of the Avalon Media System server here -->
 				<Name>avalonUrls</Name>
-				<Value>http://localhost:3000/, http://localhost:3000/</Value>
+				<Value>http://localhost:3000/,http://localhost/,http://avalon.dev/</Value>
 			</Property>
 		</Properties>
 	</Application>

@@ -60,7 +60,8 @@ public class AvalonSecurity extends ModuleBase {
     
     // check if the referrer URL is on the avalonUrls white-list
     if (!avalonUrls.contains(baseAuthUrl)) {
-    	getLogger().debug("The referer's URL " + baseAuthUrl + " is not on the Avalon URLs white-list.");
+//    	getLogger().debug("The referer's URL " + baseAuthUrl + " is not on the Avalon URLs white-list.");
+    	getLogger().info("The referer's URL " + baseAuthUrl + " is not on the Avalon URLs white-list.");
     	return authorized;
     }
     
@@ -71,7 +72,8 @@ public class AvalonSecurity extends ModuleBase {
       return authorized;
     }
 
-    getLogger().debug("Authorizing against " + authUrl.toString());
+//    getLogger().debug("Authorizing against " + authUrl.toString());
+    getLogger().info("Authorizing against " + authUrl.toString());
     try {
       HttpURLConnection http = (HttpURLConnection)authUrl.openConnection();
       http.addRequestProperty("Accept", "text/plain");
@@ -84,7 +86,8 @@ public class AvalonSecurity extends ModuleBase {
           authorized.add(authorizedStream);
           authorizedStream = reader.readLine();
         }
-        getLogger().debug("Authorized to streams " + authorized.toString());
+//        getLogger().debug("Authorized to streams " + authorized.toString());
+        getLogger().info("Authorized to streams " + authorized.toString());
       }
       return authorized;
     } catch (IOException err) {
@@ -100,7 +103,8 @@ public class AvalonSecurity extends ModuleBase {
       List<NameValuePair> httpParams = URLEncodedUtils.parse(query,Charset.defaultCharset());
       for (NameValuePair param:httpParams) {
         if (param.getName().equals("token")) {
-          getLogger().debug("Retrieved token " + param.getValue() + " from source " + source);
+//          getLogger().debug("Retrieved token " + param.getValue() + " from source " + source);
+          getLogger().info("Retrieved token " + param.getValue() + " from source " + source);
           return param.getValue();
         }
       }
@@ -113,7 +117,8 @@ public class AvalonSecurity extends ModuleBase {
 	  try {
 		  URL refUrl = new URL(referer);
 		  baseAuthUrl = new URL(refUrl.getProtocol(), refUrl.getHost(), refUrl.getPort(), "");
-          getLogger().debug("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
+//          getLogger().debug("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
+          getLogger().info("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
 	  }
 	  catch(MalformedURLException err) {
 		  getLogger().error("Invalid referer's URL passed in: " + referer);
