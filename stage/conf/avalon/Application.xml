@@ -215,8 +215,9 @@
 		<!-- Properties defined here will be added to the IApplication.getProperties() and IApplicationInstance.getProperties() collections -->
 		<Properties>
 			<Property>
+				<!-- put all possible URLs of avalon instances here, separated by comma -->
 				<Name>avalonUrls</Name>
-				<Value>http://localhost:3000/,http://localhost/,http://avalon.dev/</Value>
+				<Value>http://localhost:3000,http://localhost,http://avalon,http://avalon.dev</Value>
 			</Property>
 		</Properties>
 	</Application>

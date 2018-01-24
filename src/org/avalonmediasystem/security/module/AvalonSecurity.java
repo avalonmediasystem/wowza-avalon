@@ -30,24 +30,30 @@ public class AvalonSecurity extends ModuleBase {
   // TODO check with team whether the current logging contains sensitive info that shall be removed
   
   public void onAppStart(IApplicationInstance appInstance) {
-    String urlprop = appInstance.getProperties().getPropertyStr("avalonUrls", defaultUrl);
-    String[] urlarr = null;
-    if (!StringUtils.isEmpty(urlprop)) {
-    	urlarr = urlprop.split(","); // the list of Avalon URLs separated by ","
-    }
-    if (urlarr == null || urlarr.length == 0) {
-        getLogger().error("Unable to initialize Avalon security module without avalonUrls defined.");
-    	return;
-    }
+	  String urlprop = appInstance.getProperties().getPropertyStr("avalonUrls", defaultUrl);
+	  getLogger().debug("Read property avalonUrls from application configuration: " + urlprop);
+	  String[] urlarr = null;
+	  if (!StringUtils.isEmpty(urlprop)) {
+		  urlarr = urlprop.split(","); // the list of Avalon URLs separated by ","
+	  }
+	  if (urlarr == null || urlarr.length == 0) {
+		  getLogger().error("Unable to initialize Avalon security module without avalonUrls defined.");
+		  return;
+	  }
 
-    try {
-    	for (String urlstr : urlarr) {
-    		avalonUrls.add(new URL(urlstr));
-    	}
-    	getLogger().info("Initialized Avalon security module with allowed URLs: " + avalonUrls);
-    } catch(MalformedURLException err) {
-      getLogger().error("Unable to initialize Avalon security module with invalid avalonUrls: " + urlarr, err);
-    }
+	  for (String urlstr : urlarr) {
+		  urlstr = StringUtils.trim(urlstr);
+		  if (StringUtils.endsWith(urlstr, "/")) {
+			  urlstr = StringUtils.chop(urlstr);
+		  }
+		  try {
+			  avalonUrls.add(new URL(urlstr));
+		  }
+		  catch(MalformedURLException err) {
+			  getLogger().error("Skipping invalid URL " + urlstr + " from the allowed Avalon URLs list.", err);
+		  }
+	  }
+	  getLogger().info("Initialized Avalon security module with allowed URLs: " + avalonUrls);
   }
 
   private List<String> authStream(URL baseAuthUrl, String authToken) {
@@ -60,7 +66,6 @@ public class AvalonSecurity extends ModuleBase {
     
     // check if the referrer URL is on the avalonUrls white-list
     if (!avalonUrls.contains(baseAuthUrl)) {
-//    	getLogger().debug("The referer's URL " + baseAuthUrl + " is not on the Avalon URLs white-list.");
     	getLogger().info("The referer's URL " + baseAuthUrl + " is not on the Avalon URLs white-list.");
     	return authorized;
     }
@@ -72,7 +77,6 @@ public class AvalonSecurity extends ModuleBase {
       return authorized;
     }
 
-//    getLogger().debug("Authorizing against " + authUrl.toString());
     getLogger().info("Authorizing against " + authUrl.toString());
     try {
       HttpURLConnection http = (HttpURLConnection)authUrl.openConnection();
@@ -86,7 +90,6 @@ public class AvalonSecurity extends ModuleBase {
           authorized.add(authorizedStream);
           authorizedStream = reader.readLine();
         }
-//        getLogger().debug("Authorized to streams " + authorized.toString());
         getLogger().info("Authorized to streams " + authorized.toString());
       }
       return authorized;
@@ -103,8 +106,7 @@ public class AvalonSecurity extends ModuleBase {
       List<NameValuePair> httpParams = URLEncodedUtils.parse(query,Charset.defaultCharset());
       for (NameValuePair param:httpParams) {
         if (param.getName().equals("token")) {
-//          getLogger().debug("Retrieved token " + param.getValue() + " from source " + source);
-          getLogger().info("Retrieved token " + param.getValue() + " from source " + source);
+          getLogger().debug("Retrieved token " + param.getValue() + " from source " + source);
           return param.getValue();
         }
       }
@@ -117,8 +119,7 @@ public class AvalonSecurity extends ModuleBase {
 	  try {
 		  URL refUrl = new URL(referer);
 		  baseAuthUrl = new URL(refUrl.getProtocol(), refUrl.getHost(), refUrl.getPort(), "");
-//          getLogger().debug("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
-          getLogger().info("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
+          getLogger().debug("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
 	  }
 	  catch(MalformedURLException err) {
 		  getLogger().error("Invalid referer's URL passed in: " + referer);
@@ -127,6 +128,7 @@ public class AvalonSecurity extends ModuleBase {
   }
 
   public void onConnect(IClient client, RequestFunction function, AMFDataList params) {
+    getLogger().info("onConnect: Client: " + client.getClientId() + ", function: " + function.getType() + ", params: " + params);
     AMFDataObj connectObj = (AMFDataObj)params.get(2);
     String appName = connectObj.get("app").toString();
     String authToken = getAuthToken(appName);
