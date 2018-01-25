@@ -2,7 +2,7 @@
 <project name="wowza-avalon" default="deploy">
 		
 	<!--<property name="wowza.root" value="C:/Program Files (x86)/Wowza Media Systems"/> -->
-	<property name="wowza.root" value="/Libary/Wowza Media Systems/"/>
+	<property name="wowza.root" value="/Library/Wowza Media Systems/"/>
 	<property name="wowza.version" value="4.7.3"/>	
 	<property name="wowza.lib.dir" value="${wowza.root}/WowzaStreamingEngine-${wowza.version}/lib"/>
 	<property name="jar.filename" value="avalon-auth.jar"/>

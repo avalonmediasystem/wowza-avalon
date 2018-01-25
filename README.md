@@ -45,4 +45,10 @@ server to authorize stream playback.
 This [project](https://github.com/avalonmediasystem/wowza-avalon) was created
 and maintained using the [Wowza Integrated Development Environment](http://www.wowza.com/streaming/developers)
 for [Eclipse](http://eclipse.org/). Please refer to Wowza's documentation to install
-and configure the IDE.
+and configure the IDE (https://www.wowza.com/docs/how-to-extend-wowza-streaming-engine-using-the-wowza-ide).
+If you make changes to the source code or application settings, make sure to run the ant target "dist" in build.xml, 
+which will generate the Wowza extension package wowza-avalon-app.tar.bz2 under dist/ directory. 
+You can then install the extension package into the Wowza Streaming Engine. 
+Note: There're 2 copies of Application.xml in the project. To make the application settings take effect in your extension package,
+you need to modify stage/conf/Application.xml, which is the one being packaged into the bz2 file. 
+

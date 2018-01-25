@@ -215,7 +215,7 @@
 		<!-- Properties defined here will be added to the IApplication.getProperties() and IApplicationInstance.getProperties() collections -->
 		<Properties>
 			<Property>
-				<!-- put all possible URLs of avalon instances here, separated by comma -->
+				<!-- put URLs of all Avalon servers that users Wowza here, separated by comma -->
 				<Name>avalonUrls</Name>
 				<Value>http://localhost:3000,http://localhost,http://avalon,http://avalon.dev</Value>
 			</Property>
