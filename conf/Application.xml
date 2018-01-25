@@ -217,7 +217,7 @@
 			<Property>
 				<!-- put URLs of all Avalon servers that uses Wowza here, separated by comma -->
 				<Name>avalonUrls</Name>
-				<Value>http://localhost:3000,http://localhost,http://avalon,http://avalon.dev</Value>
+				<Value>http://localhost:3000,http://localhost,http://avalon,http://avalon.dev,https://localhost:3000,https://localhost,https://avalon,https://avalon.dev</Value>
 			</Property>
 		</Properties>
 	</Application>
