@@ -27,8 +27,6 @@ public class AvalonSecurity extends ModuleBase {
 	public String defaultUrl = "http://localhost:3000/";
 	private ArrayList<URL> avalonUrls = new ArrayList<URL>();
 
-	// TODO check with team whether the current logging contains sensitive info that shall be removed
-
 	public void onAppStart(IApplicationInstance appInstance) {
 		String urlprop = appInstance.getProperties().getPropertyStr("avalonUrls", defaultUrl);
 		getLogger().debug("Read property avalonUrls from application configuration: " + urlprop);

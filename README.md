@@ -11,7 +11,7 @@ server to authorize stream playback.
 1. Install Wowza per the [Wowza Streaming Engine User Guide](http://www.wowza.com/resources/WowzaStreamingEngine_UsersGuide.pdf)
 2. `cd [wowza-root]` (`/Library/WowzaStreamingEngine` on OS X, or 
 `/usr/local/WowzaStreamingEngine` on Linux)
-3. `curl -L https://github.com/avalonmediasystem/wowza-avalon/releases/download/v0.2.0/wowza-avalon-app.tar.bz2 | tar xj`
+3. `curl -L https://github.com/avalonmediasystem/wowza-avalon/releases/download/v0.2.1/wowza-avalon-app.tar.bz2 | tar xj`
 4. `chmod 0777 avalon`
 5. Restart the WowzaStreamEngine service
 
@@ -46,6 +46,9 @@ This [project](https://github.com/avalonmediasystem/wowza-avalon) was created
 and maintained using the [Wowza Integrated Development Environment](http://www.wowza.com/streaming/developers)
 for [Eclipse](http://eclipse.org/). Please refer to Wowza's documentation to install
 and configure the IDE (https://www.wowza.com/docs/how-to-extend-wowza-streaming-engine-using-the-wowza-ide).
+To build the project, you need to make sure to define the WOWZA-LIB classpath variable on your local system 
+(on Windows, it's typically C:/Program Files (x86)/Wowza Media Systems/Wowza Streaming Engine ${wowza.version}/lib;
+on Mac, it could be /Library/WowzaStreamingEngine-${wowza.version}/lib/).
 If you make changes to the source code or application settings, make sure to run the ant target "dist" in build.xml, 
 which will generate the Wowza extension package wowza-avalon-app.tar.bz2 under dist/ directory. 
 You can then install the extension package into the Wowza Streaming Engine. 
