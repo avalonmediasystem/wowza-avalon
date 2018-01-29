@@ -1,52 +1,81 @@
 package org.avalonmediasystem.security.module;
 
-import com.wowza.wms.application.*;
-import com.wowza.wms.amf.*;
-import com.wowza.wms.client.*;
-import com.wowza.wms.module.*;
-import com.wowza.wms.request.*;
-import com.wowza.wms.httpstreamer.model.*;
-
-import java.io.IOException;
-import java.util.List;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
+import com.wowza.wms.amf.AMFDataList;
+import com.wowza.wms.amf.AMFDataObj;
+import com.wowza.wms.application.IApplicationInstance;
+import com.wowza.wms.client.IClient;
+import com.wowza.wms.httpstreamer.model.IHTTPStreamerSession;
+import com.wowza.wms.module.ModuleBase;
+import com.wowza.wms.request.RequestFunction;
 
 public class AvalonSecurity extends ModuleBase {
 
   public String defaultUrl = "http://localhost:3000/";
-  private URL baseAuthUrl;
+  private ArrayList<URL> avalonUrls = new ArrayList<URL>();
 
   public void onAppStart(IApplicationInstance appInstance) {
-    String avalonUrl = appInstance.getProperties().getPropertyStr("avalonUrl",defaultUrl);
-    try {
-      baseAuthUrl = new URL(avalonUrl);
-      getLogger().info("Initialized Avalon security module at " + baseAuthUrl);
-    } catch(MalformedURLException err) {
-      getLogger().error("Unable to initialize Avalon security module", err);
+    String urlprop = appInstance.getProperties().getPropertyStr("avalonUrls", defaultUrl);
+    getLogger().debug("Read property avalonUrls from application configuration: " + urlprop);
+    String[] urlarr = null;
+    if (!StringUtils.isEmpty(urlprop)) {
+      urlarr = urlprop.split(","); // the list of Avalon URLs separated by ","
     }
+    if (urlarr == null || urlarr.length == 0) {
+      getLogger().error("Unable to initialize Avalon security module without avalonUrls defined.");
+      return;
+    }
+
+    for (String urlstr : urlarr) {
+      urlstr = StringUtils.trim(urlstr);
+      if (StringUtils.endsWith(urlstr, "/")) {
+        urlstr = StringUtils.chop(urlstr);
+      }
+      try {
+        avalonUrls.add(new URL(urlstr));
+      }
+      catch(MalformedURLException err) {
+        getLogger().error("Skipping invalid URL " + urlstr + " from the allowed Avalon URLs list.", err);
+      }
+    }
+    getLogger().info("Initialized Avalon security module with allowed URLs: " + avalonUrls);
   }
 
-  private List<String> authStream(String authToken) {
+  private List<String> authStream(URL baseAuthUrl, String authToken) {
+    List<String> authorized = new ArrayList<String>();
     URL authUrl;
+
+    if (baseAuthUrl == null || authToken == null) {
+      return authorized;
+    }
+
+    // check if the referrer URL is on the avalonUrls white-list
+    if (!avalonUrls.contains(baseAuthUrl)) {
+      getLogger().info("The referer's URL " + baseAuthUrl + " is not on the Avalon URLs white-list.");
+      return authorized;
+    }
 
     try {
       authUrl = new URL(baseAuthUrl, "authorize?token="+authToken);
     } catch(MalformedURLException err) {
-      getLogger().error("Error parsing URL", err);
-      return null;
+      getLogger().error("Error generating authUrl from baseAuthUrl " + baseAuthUrl + " and authToken " + authToken, err);
+      return authorized;
     }
 
-    getLogger().debug("Authorizing against " + authUrl.toString());
-    List<String> authorized = new java.util.ArrayList<String>();
+    getLogger().info("Authorizing against " + authUrl.toString());
     try {
       HttpURLConnection http = (HttpURLConnection)authUrl.openConnection();
       http.addRequestProperty("Accept", "text/plain");
@@ -59,12 +88,12 @@ public class AvalonSecurity extends ModuleBase {
           authorized.add(authorizedStream);
           authorizedStream = reader.readLine();
         }
-        getLogger().debug("Authorized to stream " + authorized.toString());
+        getLogger().info("Authorized to streams " + authorized.toString());
       }
       return authorized;
     } catch (IOException err) {
       getLogger().error("Error connecting to " + authUrl.toString(), err);
-      return null;
+      return authorized;
     }
   }
 
@@ -75,6 +104,7 @@ public class AvalonSecurity extends ModuleBase {
       List<NameValuePair> httpParams = URLEncodedUtils.parse(query,Charset.defaultCharset());
       for (NameValuePair param:httpParams) {
         if (param.getName().equals("token")) {
+          getLogger().debug("Retrieved token " + param.getValue() + " from source " + source);
           return param.getValue();
         }
       }
@@ -82,12 +112,26 @@ public class AvalonSecurity extends ModuleBase {
     return null;
   }
 
-  public void onConnect(IClient client, RequestFunction function,
-      AMFDataList params) {
+  private URL getBaseAuthUrl(String referer) {
+    URL baseAuthUrl = null;
+    try {
+      URL refUrl = new URL(referer);
+      baseAuthUrl = new URL(refUrl.getProtocol(), refUrl.getHost(), refUrl.getPort(), "");
+      getLogger().debug("Retrieved baseAuthUrl " + baseAuthUrl + " from referer " + referer);
+    }
+    catch(MalformedURLException err) {
+      getLogger().error("Invalid referer's URL passed in: " + referer);
+    }	  
+    return baseAuthUrl;
+  }
+
+  public void onConnect(IClient client, RequestFunction function, AMFDataList params) {
+    getLogger().info("onConnect: Client: " + client.getClientId() + ", function: " + function.getType() + ", params: " + params);
     AMFDataObj connectObj = (AMFDataObj)params.get(2);
     String appName = connectObj.get("app").toString();
     String authToken = getAuthToken(appName);
-    String authorized = StringUtils.join(authStream(authToken), ";");
+    URL baseAuthUrl = getBaseAuthUrl(client.getReferrer());
+    String authorized = StringUtils.join(authStream(baseAuthUrl, authToken), ";");
     getLogger().info("StreamReadAccess: " + authorized);
     client.setStreamReadAccess(authorized);
   }
@@ -96,10 +140,12 @@ public class AvalonSecurity extends ModuleBase {
     getLogger().info("onHTTPSessionCreate: " + httpSession.getSessionId());
     String query = httpSession.getQueryStr();
     String authToken = getAuthToken(query);
-    
-    List<String> authorized = authStream(authToken);
+    URL baseAuthUrl = getBaseAuthUrl(httpSession.getReferrer());
+
+    List<String> authorized = authStream(baseAuthUrl, authToken);
     if (authorized.isEmpty()) {
       httpSession.rejectSession();
+      getLogger().info("No stream is accessible. ");
       return;
     }
     String streamName = httpSession.getStreamName();
@@ -108,9 +154,11 @@ public class AvalonSecurity extends ModuleBase {
       getLogger().info("Testing " + authorizedStream + " against " + streamName);
       if ((authorized != null) && streamName.startsWith(authorizedStream)) {
         httpSession.acceptSession();
+        getLogger().info("The requested is accepted. ");
         return;
       }
     }
+    getLogger().info("The request is rejected. ");
     httpSession.rejectSession();
   }
 }
