@@ -11,7 +11,7 @@ server to authorize stream playback.
 1. Install Wowza per the [Wowza Streaming Engine User Guide](http://www.wowza.com/resources/WowzaStreamingEngine_UsersGuide.pdf)
 2. `cd [wowza-root]` (`/Library/WowzaStreamingEngine` on OS X, or 
 `/usr/local/WowzaStreamingEngine` on Linux)
-3. `curl -L https://github.com/avalonmediasystem/wowza-avalon/releases/download/v0.2.1/wowza-avalon-app.tar.bz2 | tar xj`
+3. `curl -L https://github.com/avalonmediasystem/wowza-avalon/releases/download/v0.3.0/wowza-avalon-app.tar.bz2 | tar xj`
 4. `chmod 0777 avalon`
 5. Restart the WowzaStreamEngine service
 
