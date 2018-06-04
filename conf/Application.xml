@@ -219,6 +219,11 @@
 				<Name>avalonUrls</Name>
 				<Value>http://localhost:3000,http://localhost,http://avalon,http://avalon.dev,https://localhost:3000,https://localhost,https://avalon,https://avalon.dev</Value>
 			</Property>
+			<Property>
+				<!-- Optional prefix that may be prepended to the file path, when using MediaCache -->
+				<Name>pathPrefix</Name>
+				<Value></Value>
+			</Property>
 		</Properties>
 	</Application>
 </Root>

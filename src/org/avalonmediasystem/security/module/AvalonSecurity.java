@@ -26,6 +26,7 @@ public class AvalonSecurity extends ModuleBase {
 
   public String defaultUrl = "http://localhost:3000/";
   private ArrayList<URL> avalonUrls = new ArrayList<URL>();
+  private String pathPrefix;
 
   public void onAppStart(IApplicationInstance appInstance) {
     String urlprop = appInstance.getProperties().getPropertyStr("avalonUrls", defaultUrl);
@@ -51,7 +52,9 @@ public class AvalonSecurity extends ModuleBase {
         getLogger().error("Skipping invalid URL " + urlstr + " from the allowed Avalon URLs list.", err);
       }
     }
-    getLogger().info("Initialized Avalon security module with allowed URLs: " + avalonUrls);
+    
+    pathPrefix = appInstance.getProperties().getPropertyStr("pathPrefix", "");
+    getLogger().info("Initialized Avalon security module with pathPrefix: " + pathPrefix + " and allowed URLs: " + avalonUrls);
   }
 
   private List<String> authStream(URL baseAuthUrl, String authToken) {
@@ -151,8 +154,9 @@ public class AvalonSecurity extends ModuleBase {
     String streamName = httpSession.getStreamName();
 
     for (String authorizedStream:authorized) {
-      getLogger().info("Testing " + authorizedStream + " against " + streamName);
-      if ((authorized != null) && streamName.startsWith(authorizedStream)) {
+      getLogger().info("Testing " + authorizedStream + " against " + streamName + " with possible prefix: " + pathPrefix);
+      if (authorized != null
+	    && (streamName.startsWith(authorizedStream) || streamName.startsWith(pathPrefix + authorizedStream))) {
         httpSession.acceptSession();
         getLogger().info("The requested is accepted. ");
         return;
