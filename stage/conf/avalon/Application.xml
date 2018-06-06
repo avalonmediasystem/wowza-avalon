@@ -2,7 +2,7 @@
 <Root version="1">
 	<Application>
 		<Name>avalonsecurity</Name>
-		<AppType>VOD</AppType>
+		<AppType>VODEdge</AppType>
 		<Description>Avalon Media System Security Shim</Description>
 		<!-- Uncomment to set application level timeout values
 		<ApplicationTimeout>60000</ApplicationTimeout>
@@ -160,6 +160,16 @@
 		<MediaReader>
 			<!-- Properties defined here will override any properties defined in conf/MediaReaders.xml for any MediaReaders loaded by this applications -->
 			<Properties>
+				<Property>
+					<Name>randomAccessReaderClass</Name>
+					<Value>com.wowza.wms.mediacache.impl.MediaCacheRandomAccessReaderVODEdge</Value>
+					<Type>String</Type>
+				</Property>
+				<Property>
+					<Name>bufferSeekIO</Name>
+					<Value>true</Value>
+					<Type>Boolean</Type>
+				</Property>
 			</Properties>
 		</MediaReader>
 		<MediaWriter>
@@ -175,6 +185,11 @@
 		<HTTPStreamer>
 			<!-- Properties defined here will override any properties defined in conf/HTTPStreamers.xml for any HTTPStreamer loaded by this applications -->
 			<Properties>
+				<Property>
+					<Name>httpOptimizeFileReads</Name>
+					<Value>true</Value>
+					<Type>Boolean</Type>
+				</Property>
 			</Properties>
 		</HTTPStreamer>
 		<Manager>
@@ -219,7 +234,11 @@
 				<Name>avalonUrls</Name>
 				<Value>http://localhost:3000,http://localhost,http://avalon,http://avalon.dev,https://localhost:3000,https://localhost,https://avalon,https://avalon.dev</Value>
 			</Property>
+			<Property>
+				<!-- Optional prefix that may be prepended to the file path, when using MediaCache -->
+				<Name>pathPrefix</Name>
+				<Value></Value>
+			</Property>
 		</Properties>
 	</Application>
 </Root>
-
