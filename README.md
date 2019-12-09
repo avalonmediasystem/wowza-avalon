@@ -5,6 +5,9 @@ the [Avalon Media System](http://avalonmediasystem.org). It provides the logic
 and configuration necessary for Wowza to pass a token back to a running Avalon 
 server to authorize stream playback.
 
+## Note
+This module is tested working in Wowza 4.7.5 (recommended) and 4.7.3. Currently it doesn't work with Wowza 4.7.8, fixes coming soon.
+
 ## Instructions
 
 ### Install and configure Wowza Streaming Engine
